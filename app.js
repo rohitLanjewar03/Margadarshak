@@ -5,10 +5,7 @@ const path = require('path');
 const userModel = require('./models/user');
 const ejsMate = require('ejs-mate');
 const cookieParser = require('cookie-parser');
-const passport = require('passport');
-const session = require('express-session');
-const { authenticateToken } = require('./middleware');
-require('./passport-setup'); // Import passport configuration
+const { authenticateToken } = require('./middleware'); 
 
 const app = express();
 
@@ -19,36 +16,15 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, 'public')));
 
-app.use(session({
-    secret: 'thismustbesecret', // Replace with a strong secret
-    resave: false,
-    saveUninitialized: true,
-}));
-
-app.use(passport.initialize());
-app.use(passport.session());
-
 const SECRET_KEY = "shhhhhh"; 
 
-// Google authentication routes
-app.get('/auth/google', passport.authenticate('google', { scope: ['profile', 'email'] }));
-
-app.get('/auth/google/callback', 
-    passport.authenticate('google', { failureRedirect: '/login' }),
-    (req, res) => {
-        // Successful authentication, redirect to dashboard.
-        res.redirect('/dashboard');
-    }
-);
-
-// Regular login and register routes
 app.get('/', (req, res) => {
     res.render('login');
 });
-
 app.get('/login', (req, res) => {
     res.render('login');
 });
+
 
 app.post('/register', (req, res) => {
     let { username, email, password, contact, role } = req.body;
@@ -77,6 +53,7 @@ app.post('/register', (req, res) => {
     });
 });
 
+
 app.get('/register', (req, res) => {
     res.render('signup');
 });
@@ -102,12 +79,12 @@ app.post('/login', async (req, res) => {
     }
 });
 
+
 app.get('/dashboard', authenticateToken, (req, res) => {
     res.render('dashboard', { user: req.user });
 });
 
 app.get('/logout', (req, res) => {
-    req.logout(); // Logout using passport
     res.cookie("token", "", { httpOnly: true, expires: new Date(0) }); 
     res.redirect('/');
 });
